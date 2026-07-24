@@ -79,10 +79,20 @@ fi
 git fetch origin main >/dev/null 2>&1 || true
 LOCAL_COMMIT=$(git rev-parse main)
 REMOTE_COMMIT=$(git rev-parse origin/main 2>/dev/null || echo "unknown")
-if [ "$LOCAL_COMMIT" = "$REMOTE_COMMIT" ] || [ "$REMOTE_COMMIT" = "unknown" ]; then
+if [ "$LOCAL_COMMIT" = "$REMOTE_COMMIT" ]; then
     check_pass "Main branch is up to date with origin"
+elif [ "$REMOTE_COMMIT" = "unknown" ]; then
+    check_pass "Main branch is up to date with origin (no origin/main ref found to compare against)"
+elif git merge-base --is-ancestor "$REMOTE_COMMIT" "$LOCAL_COMMIT" 2>/dev/null; then
+    # Local has commits origin doesn't yet -- this is the normal, safe state right
+    # before a push (e.g. the release commit you just made). Fixed 2026-07-24:
+    # this check used to compare LOCAL_COMMIT = REMOTE_COMMIT by exact equality,
+    # which fails on every real release the moment a local commit is made ahead
+    # of origin -- a false-positive "behind origin" trap. See MISSION-014 BLOCK-3
+    # follow-up, Registry Known Issue #6.
+    check_pass "Main branch is ahead of origin, safe to push (local commits not yet on origin)"
 else
-    check_fail "Main branch is behind origin. Pull before pushing."
+    check_fail "Main branch has diverged from or is behind origin. Pull/rebase before pushing."
 fi
 
 # ==================== PHASE 2: VERSION VALIDATION (every skill) ====================

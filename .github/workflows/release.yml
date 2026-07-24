@@ -26,7 +26,31 @@ jobs:
         run: |
           set -e
 
-          CHANGED_DIRS=$(git diff --name-only HEAD~1 HEAD | grep -E '^[^/]+/SKILL\.md$' | xargs -n1 dirname | sort -u || true)
+          # Determine the diff range: use the push event's full before/after
+          # SHAs so multi-commit pushes (or a fix commit landing in a separate
+          # push from the commit it fixes) are still correctly detected, not
+          # just the single most recent commit vs its parent. Falls back when
+          # there's no usable before-SHA: a brand new branch (before is
+          # all-zeros) or a rewritten history where the before commit isn't
+          # reachable (e.g. a force-push). Fixed 2026-07-24 after HEAD~1 HEAD
+          # missed a skill addition that landed in an earlier push than its
+          # own YAML fix. See MISSION-014 BLOCK-3 follow-up, Registry Known
+          # Issue #7.
+          BEFORE_SHA="${{ github.event.before }}"
+          AFTER_SHA="${{ github.event.after }}"
+          ZERO_SHA="0000000000000000000000000000000000000000"
+          EMPTY_TREE="4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+
+          if [ -n "$BEFORE_SHA" ] && [ "$BEFORE_SHA" != "$ZERO_SHA" ] && git cat-file -e "$BEFORE_SHA" 2>/dev/null; then
+            DIFF_RANGE="$BEFORE_SHA $AFTER_SHA"
+          elif git rev-parse HEAD~1 >/dev/null 2>&1; then
+            DIFF_RANGE="HEAD~1 HEAD"
+          else
+            DIFF_RANGE="$EMPTY_TREE HEAD"
+          fi
+
+          echo "Diffing range: $DIFF_RANGE"
+          CHANGED_DIRS=$(git diff --name-only $DIFF_RANGE | grep -E '^[^/]+/SKILL\.md$' | xargs -r -n1 dirname | sort -u || true)
 
           if [ -z "$CHANGED_DIRS" ]; then
             echo "No skill SKILL.md changed in this push — nothing to release."
