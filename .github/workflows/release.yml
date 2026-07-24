@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'signalprocessing/SKILL.md'
+      - '*/SKILL.md'
       - 'README.md'
       - '.github/workflows/release.yml'
 
@@ -14,57 +14,54 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Get version from SKILL.md
-        id: version
-        run: |
-          VERSION=$(grep "version:" signalprocessing/SKILL.md | head -1 | awk '{print $2}')
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Release version: $VERSION"
-
-      - name: Check if release exists
-        id: check_release
-        run: |
-          if gh release view v${{ steps.version.outputs.version }} 2>/dev/null; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
+      - name: Release changed skills
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build .skill files
-        if: steps.check_release.outputs.exists == 'false'
         run: |
-          zip -r signalprocessing.skill signalprocessing/
-          ls -lh *.skill
+          set -e
 
-      - name: Get commit message
-        id: commit_msg
-        run: |
+          CHANGED_DIRS=$(git diff --name-only HEAD~1 HEAD | grep -E '^[^/]+/SKILL\.md$' | xargs -n1 dirname | sort -u || true)
+
+          if [ -z "$CHANGED_DIRS" ]; then
+            echo "No skill SKILL.md changed in this push — nothing to release."
+            exit 0
+          fi
+
           MSG=$(git log -1 --pretty=%B)
-          MSG="${MSG//'%'/'%25'}"
-          MSG="${MSG//$'\n'/'%0A'}"
-          MSG="${MSG//$'\r'/'%0D'}"
-          echo "message=$MSG" >> $GITHUB_OUTPUT
 
-      - name: Create Release
-        if: steps.check_release.outputs.exists == 'false'
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ steps.version.outputs.version }}
-          name: v${{ steps.version.outputs.version }}
-          body: |
-            ## Changes
+          for DIR in $CHANGED_DIRS; do
+            if [ ! -f "$DIR/SKILL.md" ]; then
+              echo "Skipping $DIR — no SKILL.md found (deleted in this push?)."
+              continue
+            fi
 
-            ${{ steps.commit_msg.outputs.message }}
-          files: |
-            signalprocessing.skill
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            VERSION=$(grep "version:" "$DIR/SKILL.md" | head -1 | awk '{print $2}')
+            if [ -z "$VERSION" ]; then
+              echo "Skipping $DIR — no version: line found in SKILL.md."
+              continue
+            fi
+
+            TAG="${DIR}-v${VERSION}"
+            echo "Processing $DIR — version $VERSION — tag $TAG"
+
+            if gh release view "$TAG" >/dev/null 2>&1; then
+              echo "Release $TAG already exists — skipping."
+              continue
+            fi
+
+            zip -r "${DIR}.skill" "${DIR}/"
+            ls -lh "${DIR}.skill"
+
+            gh release create "$TAG" "${DIR}.skill" \
+              --title "$TAG" \
+              --notes "## Changes
+        ${MSG}"
+
+            echo "Released $TAG"
+          done

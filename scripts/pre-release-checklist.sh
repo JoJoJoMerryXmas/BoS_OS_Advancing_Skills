@@ -3,7 +3,10 @@
 # Pre-Release Checklist for BoS OS Advancing Skills
 #
 # Validates that a release is ready to push to main.
-# Adapted from BoS_OS_Start's checklist for a single-skill repo.
+# Generalized 2026-07-24 to check every skill in the repo, not just one --
+# previously hardcoded to signalprocessing/SKILL.md throughout, so a second
+# skill (prospect-intelligence-scoping) was never actually checked by this
+# script even though it reported "safe to push." See MISSION-014.
 #
 # Usage: bash scripts/pre-release-checklist.sh
 #
@@ -28,9 +31,31 @@ check_pass() { echo -e "${GREEN}✓${NC} $1"; ((CHECKS_PASSED++)); }
 check_fail() { echo -e "${RED}✗${NC} $1"; ((CHECKS_FAILED++)); }
 check_warn() { echo -e "${YELLOW}⚠${NC} $1"; }
 
+# Reads the version out of a skill's SKILL.md. No associative arrays --
+# kept portable to bash 3.2 (macOS default), not just bash 4+ (CI runners).
+get_version() {
+    local dir="$1"
+    local file="$dir/SKILL.md"
+    if [ -f "$file" ] && grep -q "version:" "$file"; then
+        grep "version:" "$file" | head -1 | awk '{print $NF}'
+    fi
+}
+
 echo "=========================================="
 echo "BoS OS Advancing Skills Pre-Release Checklist"
 echo "=========================================="
+echo ""
+
+# Discover every skill in the repo: any top-level directory containing a SKILL.md
+SKILL_DIRS=$(find . -maxdepth 2 -name "SKILL.md" -not -path "./.git/*" | xargs -n1 dirname | sed 's|^\./||' | sort -u)
+
+if [ -z "$SKILL_DIRS" ]; then
+    echo "No skill folders found (no SKILL.md anywhere). Nothing to check."
+    exit 1
+fi
+
+echo "Skills found in this repo:"
+for d in $SKILL_DIRS; do echo "  - $d"; done
 echo ""
 
 # ==================== PHASE 1: REPOSITORY STATE ====================
@@ -60,32 +85,33 @@ else
     check_fail "Main branch is behind origin. Pull before pushing."
 fi
 
-# ==================== PHASE 2: VERSION VALIDATION ====================
+# ==================== PHASE 2: VERSION VALIDATION (every skill) ====================
 echo ""
 echo "=== PHASE 2: VERSION VALIDATION ==="
 echo ""
 
-if grep -q "version:" signalprocessing/SKILL.md; then
-    VERSION=$(grep "version:" signalprocessing/SKILL.md | head -1 | awk '{print $NF}')
-    check_pass "Version found in signalprocessing/SKILL.md: $VERSION"
-else
-    check_fail "Version not found in signalprocessing/SKILL.md"
-    VERSION=""
-fi
-
-if [ -n "$VERSION" ] && [[ $VERSION =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
-    check_pass "Version format is valid: $VERSION"
-else
-    check_fail "Version format is invalid (expected X.Y or X.Y.Z): $VERSION"
-fi
-
-if [ -n "$VERSION" ]; then
-    if git tag | grep -q "^v$VERSION$"; then
-        check_fail "Version v$VERSION already exists as a git tag. Increment version."
+for DIR in $SKILL_DIRS; do
+    V=$(get_version "$DIR")
+    if [ -n "$V" ]; then
+        check_pass "Version found in $DIR/SKILL.md: $V"
     else
-        check_pass "Version v$VERSION is not yet released"
+        check_fail "Version not found in $DIR/SKILL.md"
+        continue
     fi
-fi
+
+    if [[ $V =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
+        check_pass "Version format is valid for $DIR: $V"
+    else
+        check_fail "Version format is invalid for $DIR (expected X.Y or X.Y.Z): $V"
+    fi
+
+    TAG="${DIR}-v${V}"
+    if git tag | grep -qx "$TAG"; then
+        check_fail "Version $TAG already exists as a git tag for $DIR. Increment version."
+    else
+        check_pass "Version $TAG is not yet released"
+    fi
+done
 
 # ==================== PHASE 3: FILE VALIDATION ====================
 echo ""
@@ -98,27 +124,30 @@ else
     check_fail "README.md is missing or empty"
 fi
 
-if [ -n "$VERSION" ]; then
-    if grep -q "$VERSION" README.md 2>/dev/null; then
-        check_pass "README.md mentions v$VERSION"
-    else
-        check_fail "README.md does not mention v$VERSION"
-    fi
-fi
-
-if [ -f signalprocessing/SKILL.md ] && [ -s signalprocessing/SKILL.md ]; then
-    check_pass "signalprocessing/SKILL.md exists"
-else
-    check_fail "signalprocessing/SKILL.md is missing or empty"
-fi
-
 if [ -f .github/workflows/release.yml ]; then
     check_pass ".github/workflows/release.yml exists"
 else
     check_fail ".github/workflows/release.yml not found"
 fi
 
-# ==================== PHASE 4: CHANGELOG ====================
+for DIR in $SKILL_DIRS; do
+    if [ -f "$DIR/SKILL.md" ] && [ -s "$DIR/SKILL.md" ]; then
+        check_pass "$DIR/SKILL.md exists"
+    else
+        check_fail "$DIR/SKILL.md is missing or empty"
+    fi
+
+    V=$(get_version "$DIR")
+    if [ -n "$V" ]; then
+        if grep -q "$V" README.md 2>/dev/null; then
+            check_pass "README.md mentions $DIR v$V"
+        else
+            check_fail "README.md does not mention $DIR v$V"
+        fi
+    fi
+done
+
+# ==================== PHASE 4: CHANGELOG (every skill) ====================
 echo ""
 echo "=== PHASE 4: CHANGELOG ==="
 echo ""
@@ -129,13 +158,19 @@ elif [ ! -s CHANGELOG.md ]; then
     check_fail "CHANGELOG.md is empty"
 else
     check_pass "CHANGELOG.md exists and is not empty"
-    if [ -n "$VERSION" ]; then
-        if grep -E "^#+\s*(v)?$VERSION" CHANGELOG.md > /dev/null; then
-            check_pass "CHANGELOG.md contains entry for v$VERSION"
+    for DIR in $SKILL_DIRS; do
+        V=$(get_version "$DIR")
+        [ -z "$V" ] && continue
+        # Accepts either a skill-scoped heading ("## prospect-intelligence-scoping v1.0.0 ...")
+        # or the older bare-version heading ("## v1.0.0 ...") for repos/entries predating
+        # the skill-prefixed tag scheme.
+        if grep -E "^#+.*\b${DIR}\b.*\b${V}\b" CHANGELOG.md > /dev/null || \
+           grep -E "^#+[[:space:]]*(v)?${V}([[:space:]]|\$)" CHANGELOG.md > /dev/null; then
+            check_pass "CHANGELOG.md contains an entry for $DIR v$V"
         else
-            check_fail "CHANGELOG.md does not contain entry for v$VERSION"
+            check_fail "CHANGELOG.md does not contain an entry for $DIR v$V"
         fi
-    fi
+    done
 fi
 
 # ==================== PHASE 5: CONTENT HYGIENE ====================
@@ -143,12 +178,14 @@ echo ""
 echo "=== PHASE 5: CONTENT HYGIENE ==="
 echo ""
 
-EMDASH_COUNT=$(grep -c "—" signalprocessing/SKILL.md || true)
-if [ "$EMDASH_COUNT" -eq 0 ]; then
-    check_pass "No em dashes in signalprocessing/SKILL.md"
-else
-    check_fail "signalprocessing/SKILL.md contains $EMDASH_COUNT em dash(es), house style forbids these"
-fi
+for DIR in $SKILL_DIRS; do
+    EMDASH_COUNT=$(grep -c "—" "$DIR/SKILL.md" || true)
+    if [ "$EMDASH_COUNT" -eq 0 ]; then
+        check_pass "No em dashes in $DIR/SKILL.md"
+    else
+        check_warn "$DIR/SKILL.md contains $EMDASH_COUNT em dash(es) - informational only, SKILL.md files are exempt from the house no-em-dash rule (Brand_and_Messaging.md), not a release blocker"
+    fi
+done
 
 # ==================== SUMMARY ====================
 echo ""
