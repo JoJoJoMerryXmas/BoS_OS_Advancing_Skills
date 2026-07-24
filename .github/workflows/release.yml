@@ -58,10 +58,10 @@ jobs:
             zip -r "${DIR}.skill" "${DIR}/"
             ls -lh "${DIR}.skill"
 
+            NOTES=$(printf '## Changes\n%s' "$MSG")
             gh release create "$TAG" "${DIR}.skill" \
               --title "$TAG" \
-              --notes "## Changes
-        ${MSG}"
+              --notes "$NOTES"
 
             echo "Released $TAG"
           done
