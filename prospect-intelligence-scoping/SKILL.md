@@ -215,3 +215,4 @@ The build-ready spec this skill produces (Phase 5, Output) is designed to be han
 **v1.0 (2026-07-24) First public release.**
 
 *Prospect Intelligence Scoping, Business of Software. AI-generated skill; review before activating on production data. All work is subject to the host install's own CLAUDE.md hard constraints.*
+
