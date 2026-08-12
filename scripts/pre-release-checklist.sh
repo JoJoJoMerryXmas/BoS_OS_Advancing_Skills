@@ -197,6 +197,30 @@ for DIR in $SKILL_DIRS; do
     fi
 done
 
+# ==================== PHASE 6: PACKAGE STRUCTURE ====================
+echo ""
+echo "=== PHASE 6: PACKAGE STRUCTURE ==="
+echo ""
+
+# Guards against the nested-folder zip bug: `zip -r x.skill dir/` packages the
+# wrapping folder itself, putting SKILL.md one level too deep for Cowork's
+# uploader (which expects SKILL.md at the zip root). Build each skill's
+# package the same way release.yml does and verify the structure locally,
+# before it ever reaches GitHub Actions. Added 2026-08-12 — the fix described
+# in GitHub_Release_Process.md v1.7 as already ported to this repo was found
+# live-missing at the start of the skill-currency-check-v1.0.0 release.
+TMP_PKG_DIR=$(mktemp -d)
+for DIR in $SKILL_DIRS; do
+    PKG="$TMP_PKG_DIR/${DIR}.skill"
+    (cd "$DIR" && zip -qr "$PKG" .)
+    if unzip -l "$PKG" | awk '{print $4}' | grep -qx "SKILL.md"; then
+        check_pass "$DIR packages with SKILL.md at the zip root"
+    else
+        check_fail "$DIR packages with SKILL.md nested (not at zip root) — would break Cowork's uploader"
+    fi
+done
+rm -rf "$TMP_PKG_DIR"
+
 # ==================== SUMMARY ====================
 echo ""
 echo "=========================================="

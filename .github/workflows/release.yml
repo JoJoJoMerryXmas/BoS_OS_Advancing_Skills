@@ -79,8 +79,25 @@ jobs:
               continue
             fi
 
-            zip -r "${DIR}.skill" "${DIR}/"
+            # Package the skill folder's CONTENTS at the zip root, not the folder
+            # itself — `zip -r x.skill dir/` wraps everything one level deeper
+            # (dir/SKILL.md inside the zip), which breaks Cowork's skill uploader:
+            # it looks for SKILL.md at the zip's top level and fails with a
+            # nested/secondary-level error. Same bug as BoS_OS_Start pre-v2.4.0;
+            # ported here 2026-08-12.
+            (cd "$DIR" && zip -r "../${DIR}.skill" .)
             ls -lh "${DIR}.skill"
+
+            # Guard against the nested-folder bug regressing: the .skill must have
+            # SKILL.md at its root, not inside a subfolder. Fails the release if
+            # packaging goes wrong again.
+            if unzip -l "${DIR}.skill" | awk '{print $4}' | grep -qx "SKILL.md"; then
+              echo "OK: ${DIR}.skill has SKILL.md at its root"
+            else
+              echo "FAIL: ${DIR}.skill does not have SKILL.md at its root — packaging is nested"
+              unzip -l "${DIR}.skill"
+              exit 1
+            fi
 
             NOTES=$(printf '## Changes\n%s' "$MSG")
             gh release create "$TAG" "${DIR}.skill" \

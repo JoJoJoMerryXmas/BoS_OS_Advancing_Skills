@@ -3,7 +3,7 @@ name: SignalProcessing
 description: |
   Turn recorded conversations and interviews into actionable insights in your BoS OS. Builds a repeatable system: define your key documents, identify the signals in transcripts worth tracking, set it up, then iterate. Also handles batch processing, so information your system already produces costs less time to use. MANDATORY TRIGGERS: SignalProcessing, set up signal routing, turn transcripts into signals, extract signals from conversations. Use when building a system for routing insights from conversations to core documents, starting a signal-routing workflow, testing signal matching and approval, or running a weekly signal batch. Do not trigger on: "signal processing" (generic), "batch processing" (generic), "transcript processing" (generic), "transcriptinator" (legacy v1.0).
 metadata:
-  version: 1.0.0
+  version: 1.0.1
   author: Jo Littlewood and Business of Software
   prerequisites: Bootstrap complete, Workshop completed or at least one document identified, BoS OS folder structure in place
   state_requirements: |
@@ -13,7 +13,7 @@ metadata:
 
 # SignalProcessing
 
-**Version:** 1.0
+**Version:** 1.0.1
 **Status:** RELEASED
 
 **Author:** Jo Littlewood and Business of Software
@@ -21,7 +21,7 @@ metadata:
 
 Turns conversations and transcripts into compounding progress on your BoS OS's own core documents: a roadmap, an FAQ, a testimonials file, whatever you name. Signals get spotted, batched, and routed only with your approval, so nothing evaporates and nothing writes itself in without you seeing where it went.
 
-This is one of BoS OS's **advancing skills**, for a user who already has a working core (Bootstrap and Workshop complete), not someone just getting started. Sits after Bootstrap → Workshop → Run.
+This is one of BoS OS's **advancing skills**, for a user who already has a working core (Bootstrap and Workshop complete), not someone just getting started. Sits after Bootstrap -> Workshop -> Run.
 
 **Origin:** built the same way it works: this mission started as a line in a workshop transcript, was flagged as a strong signal, and became real the same day. Worth telling that story to a new user as the illustrative case.
 
@@ -29,7 +29,7 @@ This is one of BoS OS's **advancing skills**, for a user who already has a worki
 
 # PREREQUISITE CHECKS: COMPLETE BEFORE PROCEEDING
 
-Do not begin setup. Do not open any documents. Complete checks 1–4 first, in order.
+Do not begin setup. Do not open any documents. Complete checks 1-4 first, in order.
 
 ## Check 1: Who Are You? (Establish Personalization)
 
@@ -59,7 +59,7 @@ Look for evidence of a BoS OS folder structure:
 >
 > **Here's what to do:**
 > 1. Run the **Agent OS Bootstrap** skill to create your folder structure and strategy documents
-> 2. That will take 30–45 minutes and build everything you need
+> 2. That will take 30-45 minutes and build everything you need
 > 3. Then come back here and we'll set up signal routing
 >
 > Ready to bootstrap, or do you want to know more about what that involves?"
@@ -86,7 +86,7 @@ Look for evidence of completed Bootstrap:
 > 2. That's a prerequisite for signal routing: you need documents to route signals *to*
 > 3. Then come back here
 >
-> This will take 30–45 minutes. Ready to run Bootstrap?"
+> This will take 30-45 minutes. Ready to run Bootstrap?"
 
 Do not proceed until Bootstrap is complete.
 
@@ -104,7 +104,7 @@ Look for evidence that at least basic document setup has happened:
 
 > "[Name], I can see your bootstrap is complete, but it looks like you haven't yet decided which documents are most important for signal routing. That's okay: we can set that up together right now.
 >
-> In just a moment, I'm going to ask you a few questions to help you identify your key documents: the ones you actually want to feed signals into. It'll take 10–15 minutes, and at the end you'll have a clear list of documents to route to.
+> In just a moment, I'm going to ask you a few questions to help you identify your key documents: the ones you actually want to feed signals into. It'll take 10-15 minutes, and at the end you'll have a clear list of documents to route to.
 >
 > Ready?"
 
@@ -122,7 +122,7 @@ Before we set up signal routing, confirm you're ready:
 
 - [ ] **Folder access.** Do you have read/write access to your BoS OS folder (the one with `01_STATE/`, `02_STRATEGY/`, `03_AGENTS/`, `04_MISSIONS/`, `05_ARTIFACTS/`)?
 - [ ] **Transcripts ready (optional).** Do you have at least one conversation/transcript you want to test signal extraction on? (You can grab one later if not, but having one makes the testing feel real.)
-- [ ] **Time budget.** Do you have 60–90 minutes? Setup is one session; running signals is ongoing, not a one-shot.
+- [ ] **Time budget.** Do you have 60-90 minutes? Setup is one session; running signals is ongoing, not a one-shot.
 - [ ] **Decision authority.** Are you the person who decides what gets routed where, or do you need input from someone else? (That's fine either way: just know it now.)
 
 If you've checked all four, we're good to go. If not, that's okay, let me know what's missing and we'll sort it.
@@ -135,12 +135,12 @@ SignalProcessing turns recorded conversations (transcripts, Insight Briefs, meet
 
 Here's how it works in four stages:
 
-1. **Document Architect**: You identify and design your critical documents (the ones worth keeping signals in). This happens once, at setup. *Estimate: 20–30 minutes.*
-2. **Signal Sweeper**: You feed it conversations, and it extracts candidate signals and stages them for your review. *Estimate: 5–10 minutes per transcript.*
-3. **Approval**: You look at a batch of candidates and decide: approve all, edit some, reject some. *Estimate: 10–15 minutes per batch.*
-4. **Promotion**: Each approved signal writes to its destination document, with three safety checks running before anything touches your files. *Estimate: 1–2 minutes per signal.*
+1. **Document Architect**: You identify and design your critical documents (the ones worth keeping signals in). This happens once, at setup. *Estimate: 20-30 minutes.*
+2. **Signal Sweeper**: You feed it conversations, and it extracts candidate signals and stages them for your review. *Estimate: 5-10 minutes per transcript.*
+3. **Approval**: You look at a batch of candidates and decide: approve all, edit some, reject some. *Estimate: 10-15 minutes per batch.*
+4. **Promotion**: Each approved signal writes to its destination document, with three safety checks running before anything touches your files. *Estimate: 1-2 minutes per signal.*
 
-By the end of this session, you'll have a working system where signals flow in → you review → you approve → they write. Clean, intentional, auditable.
+By the end of this session, you'll have a working system where signals flow in, you review, you approve, they write. Clean, intentional, auditable.
 
 ## Where You'll Be at Each Stage
 
@@ -302,9 +302,9 @@ Columns fixed at creation, confirmed with you once: not renegotiated per entry.
 
 Backlog is not a place ideas go to be forgotten. Once a month, or at whatever cadence your own planning process already runs on, review every entry:
 
-- **PROMOTE** → the idea now has enough weight (raised independently more than once, or it fits an initiative you're already committed to): move it to Roadmap. It picks up Roadmap's own review cadence from that point.
-- **KEEP** → still speculative, not enough evidence yet: leave it in Backlog.
-- **DESTROY** → no longer relevant: remove it.
+- **PROMOTE** -> the idea now has enough weight (raised independently more than once, or it fits an initiative you're already committed to): move it to Roadmap. It picks up Roadmap's own review cadence from that point.
+- **KEEP** -> still speculative, not enough evidence yet: leave it in Backlog.
+- **DESTROY** -> no longer relevant: remove it.
 
 This deliberately mirrors the triage your BoS OS already uses for its own `01_STATE/backlog.md` (DESTROY / PROMOTE / KEEP): same pattern, so it's familiar rather than a new vocabulary to learn. If your own planning cadence isn't monthly, use whatever cadence you actually run: the rule is "reviewed on a real cadence you'll keep," not "reviewed on the 1st of the month specifically."
 
@@ -357,9 +357,9 @@ Right now, let me check your existing boundary. What does your BoS OS's `CLAUDE.
 Runs on every candidate signal, before staging:
 
 1. Check the candidate against your confidentiality boundary.
-2. **Pass** → proceeds to Signal Sweeper's staging step.
-3. **Exclude** → dropped from staging. Counted, not silent.
-4. **Ambiguous** (doesn't clearly resolve either way) → escalate to you. Never default silently in either direction.
+2. **Pass** -> proceeds to Signal Sweeper's staging step.
+3. **Exclude** -> dropped from staging. Counted, not silent.
+4. **Ambiguous** (doesn't clearly resolve either way) -> escalate to you. Never default silently in either direction.
 
 ## The Exclusion Notice: Fixed Template, No Exceptions
 
@@ -442,7 +442,7 @@ Sources: [N conversations/transcripts]
 Excluded: [N] item(s) excluded this batch, flagged as potentially confidential.
 
 Matched ([N] candidates):
-  1. → [Document name]: "[segment text]"
+  1. -> [Document name]: "[segment text]"
      Reason: [match_reason]
   ...
 
@@ -451,7 +451,7 @@ Held, no match ([N] candidates):
   ...
 
 Conflicts flagged ([N]):
-  1. → [Document name]: "[segment text]" conflicts with / reinforces existing entry: "[existing text]"
+  1. -> [Document name]: "[segment text]" conflicts with / reinforces existing entry: "[existing text]"
   ...
 
 Your decision: APPROVE ALL, or name exclusions/edits per item.
@@ -477,9 +477,9 @@ I'll reference these examples as we move through approval and promotion. They sh
 
 1. Check the incoming-transcripts location for anything without a "processed" prefix: that absence is the only signal needed.
 2. Validate before treating a file as a source:
-   - Filename or content pattern indicates a summary, not a transcript → skip, record reason `"summary, not transcript"`.
-   - A read stops before reaching the end → skip, record reason `"read incomplete"`. Never process a partial read silently.
-3. Run the pipeline unchanged on each validated source: Confidentiality Guardian → extraction/match.
+   - Filename or content pattern indicates a summary, not a transcript -> skip, record reason `"summary, not transcript"`.
+   - A read stops before reaching the end -> skip, record reason `"read incomplete"`. Never process a partial read silently.
+3. Run the pipeline unchanged on each validated source: Confidentiality Guardian -> extraction/match.
 4. Rename/re-flag each successfully processed source with a "processed" prefix.
 5. Assemble results into a draft batch: individual or weekly, depending on which cadence fired.
 6. **Overlap check:** before finalising, check the batch's source list against any other batch still awaiting approval. If they overlap, name the earlier batch and its date in the new batch's view, so you see the overlap before deciding on either one.
@@ -653,9 +653,9 @@ After your first successful promotion (one signal written, verified, complete):
 SignalProcessing is an **advancing skill**. It assumes you already have a working BoS OS (Bootstrap complete, at least one Workshop pass, CLAUDE.md in place). It sits in the flow like this:
 
 **Bootstrap** (build your folder structure and strategy documents)
-→ **Workshop** (refine strategy, create agent specs, define your first mission)
-→ **SignalProcessing** (set up signal routing from conversations into your documents)
-→ **Agent OS Run** (operate your agents and missions, using SignalProcessing to feed them insights)
+-> **Workshop** (refine strategy, create agent specs, define your first mission)
+-> **SignalProcessing** (set up signal routing from conversations into your documents)
+-> **Agent OS Run** (operate your agents and missions, using SignalProcessing to feed them insights)
 
 SignalProcessing doesn't replace either Bootstrap or Workshop. It complements them: once you know *what* documents matter (Workshop output), SignalProcessing helps you *keep them current* by systematically extracting and routing signals from conversations.
 
@@ -682,6 +682,8 @@ If you're also building agents (via Bootstrap and Workshop), Agent OS Run will s
 ---
 
 ## Version History
+
+**v1.0.1 (2026-08-12)** Packaging fix only, no content change. The originally-released `.skill` package had `SKILL.md` nested one level too deep (`signalprocessing/SKILL.md` inside the zip, instead of at the zip root), which breaks Cowork's skill uploader. Repackaged correctly; nothing in this file changed except this version line.
 
 **v1.0 (2026-07-17)** First public release.
 

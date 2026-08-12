@@ -4,6 +4,50 @@ All notable changes to BoS OS Advancing Skills are documented here.
 
 ---
 
+## skill-currency-check v1.0.0 (2026-08-12)
+
+### New: Skill Currency Check (third Advancing Skill)
+
+A simple, basic way of keeping your BoS OS current: an on-demand audit that compares every skill installed in your Cowork session against the canonical version in these repos, using a central manifest as the source of truth. It won't touch anything without asking, but it may surface ideas for doing things more efficiently, a skill you're running on an old version, one that's silently broken, or one you built locally and never shared back.
+
+Catches three failure modes: version drift, broken installs (a skill truncated to a stub during sync), and skills that exist locally but aren't yet in any BoS OS repo. Reports findings in chat only; updates only happen with explicit approval, one batch at a time.
+
+### Upgrade path
+
+New addition to the repo. Nothing to migrate. SignalProcessing and Prospect Intelligence Scoping are unaffected and remain at their own v1.0.0.
+
+### Infrastructure
+
+`.github/workflows/release.yml` and `scripts/pre-release-checklist.sh` both gained a package-structure check (build each skill's `.skill`, confirm `SKILL.md` sits at the zip root, not nested inside a wrapping folder). This closes a gap found live during this release: the zip-nesting fix described in `GitHub_Release_Process.md` v1.7 as already ported to this repo was verified live-missing at the start of this build.
+
+Checking the two already-live `.skill` assets against this same test confirmed both were affected, see the two patch releases immediately below, shipped in the same push as this release.
+
+---
+
+## signalprocessing v1.0.1 (2026-08-12)
+
+### Fix: repackaged, no content change
+
+The `v1.0.0` release of SignalProcessing shipped with `SKILL.md` nested one level too deep inside its `.skill` zip (`signalprocessing/SKILL.md` instead of `SKILL.md` at the root), which breaks Cowork's skill uploader. Confirmed by downloading and inspecting the live `v1.0.0` asset. Repackaged correctly under `v1.0.1`; the skill's content and behaviour are unchanged. Anyone who downloaded `v1.0.0` and hit an install error should re-download from this release.
+
+### Upgrade path
+
+Packaging fix only. No content or behaviour change from v1.0.0.
+
+---
+
+## prospect-intelligence-scoping v1.0.1 (2026-08-12)
+
+### Fix: repackaged, no content change
+
+Same bug, same fix as SignalProcessing above: the `prospect-intelligence-scoping-v1.0.0` release had `SKILL.md` nested one level too deep inside its `.skill` zip. Confirmed by downloading and inspecting the live asset. Repackaged correctly under `v1.0.1`; the skill's content and behaviour are unchanged. Anyone who downloaded `v1.0.0` and hit an install error should re-download from this release.
+
+### Upgrade path
+
+Packaging fix only. No content or behaviour change from v1.0.0.
+
+---
+
 ## prospect-intelligence-scoping v1.0.0 (2026-07-24)
 
 ### New: Prospect Intelligence Scoping (second Advancing Skill)
