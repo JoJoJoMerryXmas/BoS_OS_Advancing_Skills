@@ -2,14 +2,14 @@
 name: "skill-currency-check"
 description: "On-demand audit that compares skills currently installed in this Cowork session against canonical versions in the BoS OS GitHub repos, using skills-manifest.yml as the source of truth. Catches version drift, broken installs, superseded skills, and skills not yet shared to GitHub. Works for any BoS OS user."
 metadata:
-  version: 1.1.0
+  version: 1.1.1
   author: Business of Software
   prerequisites: A BoS OS install with one or more skills already in place
 ---
 
 # Skill Currency Check
 
-**Version:** 1.1
+**Version:** 1.1.1
 **Status:** RELEASED
 
 **Author:** Business of Software
@@ -48,10 +48,12 @@ skills:
     replacement_guidance: "Use some-skill for all X operations. older-skill-name is kept for backward compatibility only."
 ```
 
-The `repo` field maps to one of three GitHub repos in the BoSMark org:
+The `repo` field maps to exactly one of three GitHub repos in the BoSMark org — always use the manifest's `repo` value verbatim, never a repo name inferred from the skill's own name:
 - `BoS_OS_Start` → https://github.com/BoSMark/BoS_OS_Start
 - `Quick_Questions` → https://github.com/BoSMark/Quick_Questions
 - `BoS_OS_Advancing_Skills` → https://github.com/BoSMark/BoS_OS_Advancing_Skills
+
+**Do not fetch from `BoSOS-Bootstrap`, `BoSOS-Workshop`, or `BoSOS-Run`.** These are real, live GitHub repos in the BoSMark org — they will resolve and return content if fetched — but they are frozen single-skill pointer mirrors, stripped of version-specific content, with no CI/CD sync to `BoS_OS_Start`. Their names closely match `agent-os-bootstrap`, `agent-os-workshop`, and `agent-os-run`, which makes them an easy wrong guess if a repo name is inferred from a skill name instead of read from the manifest. All three of those skills resolve to `repo: "BoS_OS_Start"` in the manifest — that is their only canonical source. Fetching from the pointer repos instead produces incomplete or stale content reported as if it were canonical. If the manifest's `repo` field for a skill is ever missing or ambiguous, stop and report it rather than guessing a repo name from the skill's own name.
 
 `supersedes`, `deprecated_date`, and `replacement_guidance` are optional per-entry fields. Most entries won't have them — they only appear once a skill has genuinely been replaced by another.
 
@@ -65,7 +67,7 @@ Read each installed SKILL.md directly with the Read tool to get the full body �
 
 Skip generic, non-BoS skills that don't originate from the BoS OS pipeline: `docx`, `pdf`, `pptx`, `xlsx`, `schedule`, `setup-cowork`, `skill-creator`, `consolidate-memory`, and any obviously-generic Anthropic-provided skill. These have no canonical GitHub entry and would only produce false "orphan" noise.
 
-In scope: anything that looks BoS-authored (agent-os-*, signalprocessing, prospect-intelligence-scoping, skill-currency-check, bos-competitive-signal-watch, signal-consolidation-sweep, transcript-insight-processor, ceo-interview-prep, founder-alignment-check, founder-replaceability-check, otter-transcript-pull-shared, ai-readiness-check, bos-os-demo-guide, and similar).
+In scope: anything that looks BoS-authored (agent-os-*, signalprocessing, prospect-intelligence-scoping, skill-currency-check, bos-competitive-signal-watch, signal-consolidation-sweep, transcript-insight-processor, ceo-interview-prep, founder-alignment-check, founder-replaceability-check, otter-transcript-pull-shared, ai-readiness-check, bos-os-demo-guide, and similar). `agent-os-bootstrap`, `agent-os-workshop`, and `agent-os-run` are all in scope, checked normally like any other manifest entry — resolved to `BoS_OS_Start` per Step 1, never excluded.
 
 ## Step 3: Check for broken installs first
 
@@ -75,16 +77,16 @@ Before comparing versions or content, check whether the installed file's body (a
 
 For each installed skill:
 
-- If the skill name appears in the manifest, get its `repo` and `path`.
+- If the skill name appears in the manifest, get its `repo` and `path` — use those values exactly as written, never a guessed or inferred repo name (see Step 1).
 - If not found in the manifest, the skill is **NOT IN MANIFEST** — proceed to Step 7 ("not yet shared" report).
 
 ## Step 5: Fetch canonical from GitHub and compare
 
 For each skill in the manifest:
 
-1. Build the raw GitHub URL: `https://raw.githubusercontent.com/BoSMark/{repo}/main/{path}` (using the repo name and path from the manifest).
+1. Build the raw GitHub URL: `https://raw.githubusercontent.com/BoSMark/{repo}/main/{path}` (using the repo name and path from the manifest, verbatim).
 2. Fetch the canonical SKILL.md from that URL using `mcp__workspace__web_fetch` or equivalent.
-3. If the fetch fails (404, network error, etc.), report it as a **GITHUB FETCH ERROR** and flag for the user — don't guess or skip.
+3. If the fetch fails (404, network error, etc.), report it as a **GITHUB FETCH ERROR** and flag for the user — don't guess or skip. If the URL being fetched contains `BoSOS-Bootstrap`, `BoSOS-Workshop`, or `BoSOS-Run`, that is a sign the manifest lookup was skipped or done wrong upstream — fix the repo resolution against the manifest rather than treating it as a normal fetch error.
 
 **Compare version:**
 
@@ -151,6 +153,7 @@ Once approved, call `mcp__cowork__save_skill` with `overwrite: true` for each ap
 - It doesn't write to tracked folders (05_ARTIFACTS/Skills/ or GitHub repos) directly. Pushing an INSTALLED AHEAD skill back to canonical is a tracked-folder write and follows the normal decision cascade.
 - It doesn't auto-remove or auto-replace superseded skills — it informs, the user decides.
 - It doesn't require internet for the check itself if the user has a local copy of the manifest, but without GitHub access, INSTALLED AHEAD and version-drift checks can't proceed.
+- It never fetches from `BoSOS-Bootstrap`, `BoSOS-Workshop`, or `BoSOS-Run` — those are frozen pointer mirrors, not a canonical source. `BoS_OS_Start` is the only canonical source for `agent-os-bootstrap`, `agent-os-workshop`, and `agent-os-run`.
 
 ---
 
@@ -174,6 +177,8 @@ Unlike Prospect Intelligence Scoping's hand-off to Agent OS Run, this skill's ou
 ---
 
 ## Version History
+
+**v1.1.1 (2026-08-19) Ghost-repo routing fix.** Step 1 now explicitly names `BoSOS-Bootstrap`, `BoSOS-Workshop`, and `BoSOS-Run` as real but non-canonical repos and instructs the skill never to fetch from them directly — always resolve `agent-os-bootstrap`/`agent-os-workshop`/`agent-os-run` to `BoS_OS_Start` via the manifest's `repo` field. Step 2 and Step 5 updated to match: all three Toolkit skills stay in scope, checked normally, never excluded. No manifest change required — `skills-manifest.yml` already routed all three correctly; this release only hardens the instructions against a session guessing a repo name from a skill name instead of reading the manifest. PATCH release, no new capability.
 
 **v1.1 (2026-08-12) Supersession detection (Phase 1).** Added Step 6: checks whether an installed skill appears in another manifest entry's `supersedes` list and, if so, reports the replacement, deprecation date, and guidance — informational only, no auto-removal. New `SUPERSEDED` status code. Manifest schema gained three optional fields (`supersedes`, `deprecated_date`, `replacement_guidance`); none are populated yet — this ships the mechanism ahead of the first real case.
 

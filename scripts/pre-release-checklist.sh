@@ -174,7 +174,14 @@ else
         # Accepts either a skill-scoped heading ("## prospect-intelligence-scoping v1.0.0 ...")
         # or the older bare-version heading ("## v1.0.0 ...") for repos/entries predating
         # the skill-prefixed tag scheme.
-        if grep -E "^#+.*\b${DIR}\b.*\b${V}\b" CHANGELOG.md > /dev/null || \
+        # NOTE (2026-08-19): the skill-scoped pattern's leading \b before ${V} never matched
+        # a "v"-prefixed version ("...scoping v1.0.1") because "v" and the following digit are
+        # both word characters, so no boundary exists between them. Found live while checking
+        # in skill-currency-check v1.1.1: this check had apparently never actually passed for
+        # any skill-scoped heading using the "v1.0.0" style already in use throughout this
+        # CHANGELOG. Fixed by making the optional "v" part of the match instead of assuming a
+        # boundary before it.
+        if grep -E "^#+.*\b${DIR}\b.*v?${V}\b" CHANGELOG.md > /dev/null || \
            grep -E "^#+[[:space:]]*(v)?${V}([[:space:]]|\$)" CHANGELOG.md > /dev/null; then
             check_pass "CHANGELOG.md contains an entry for $DIR v$V"
         else

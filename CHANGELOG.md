@@ -4,6 +4,30 @@ All notable changes to BoS OS Advancing Skills are documented here.
 
 ---
 
+## skill-currency-check v1.1.1 (2026-08-19)
+
+### Fix: ghost-repo routing
+
+`BoSOS-Bootstrap`, `BoSOS-Workshop`, and `BoSOS-Run` are real, live repos in the BoSMark org — frozen single-skill pointer mirrors with no version-specific content, no CI/CD sync to `BoS_OS_Start`. Their names closely match the `agent-os-bootstrap`/`agent-os-workshop`/`agent-os-run` skill names, which made them an easy wrong guess if a repo name were ever inferred from a skill name rather than read from `skills-manifest.yml`. Step 1 now names all three explicitly and instructs the skill never to fetch from them; `BoS_OS_Start` is the only canonical source for those three skills, which the manifest already correctly reflected. Steps 2 and 5 updated to match — all three Toolkit skills stay in scope and get checked normally, never excluded. No manifest change required.
+
+### Upgrade path
+
+Instructions-only fix, no schema or behaviour change for any other skill. Re-download or re-sync via Skill Currency Check itself.
+
+---
+
+## skill-currency-check v1.1.0 (2026-08-12)
+
+### New: Supersession detection (Phase 1)
+
+Added a check for skills the manifest marks as superseded by a newer one (`supersedes`, `deprecated_date`, `replacement_guidance` — three new optional manifest fields), reported informationally with a new `SUPERSEDED` status code. No auto-removal; the user decides. No manifest entries use it yet — ships the mechanism ahead of the first real case.
+
+### Upgrade path
+
+New capability, additive. No migration needed.
+
+---
+
 ## skill-currency-check v1.0.0 (2026-08-12)
 
 ### New: Skill Currency Check (third Advancing Skill)

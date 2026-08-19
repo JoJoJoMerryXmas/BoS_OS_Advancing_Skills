@@ -18,7 +18,7 @@ The skill teaches you the importance of your core documents, then shows you how 
 
 Built by Tim Barker to scope his own company's prospect intelligence, before it was offered here.
 
-**Skill Currency Check** (v1.0.0): an on-demand audit that compares the skills installed in your Cowork session against the canonical versions in these BoS OS repos. It's a way of keeping your system current that doesn't touch anything without your say-so, and it can surface skills worth updating that you'd otherwise never notice had moved on. Catches three things: version drift (yours is older, or newer, than what's live), broken installs (a skill silently truncated to a stub during sync), and skills you've built locally but never shared back. Reports what it finds in chat; nothing updates without your explicit approval.
+**Skill Currency Check** (v1.1.1): an on-demand audit that compares the skills installed in your Cowork session against the canonical versions in these BoS OS repos. It's a way of keeping your system current that doesn't touch anything without your say-so, and it can surface skills worth updating that you'd otherwise never notice had moved on. Catches four things: version drift (yours is older, or newer, than what's live), broken installs (a skill silently truncated to a stub during sync), skills that have been superseded by a newer one, and skills you've built locally but never shared back. Reports what it finds in chat; nothing updates without your explicit approval.
 
 See [CHANGELOG.md](CHANGELOG.md) for release history.
 
